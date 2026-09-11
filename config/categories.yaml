@@ -1,0 +1,66 @@
+# Anomaly category definitions. Thresholds here are STARTING CANDIDATES only.
+# None of them has been validated against the site's real behavior. Any number
+# in this file that has not been checked against the archive is marked provisional.
+
+version: "cat-v0.1"
+
+categories:
+
+  normal:
+    description: "Behavior consistent with this equipment on this panel at this time of day."
+    provisional: false
+
+  prolonged_operation:
+    description: "Equipment running continuously well beyond its typical run length."
+    evidence_required: [run_duration_s, typical_run_duration_s, appliance_state_source]
+    provisional_thresholds:
+      # Keys are appliance names from config/site.yaml. Replace these with
+      # your own equipment and fit the numbers to its observed behavior.
+      air_handler: {multiple_of_typical: 2.5, floor_s: 5400}
+      water_heater: {multiple_of_typical: 2.5, floor_s: 3600}
+      well_pump: {multiple_of_typical: 3.0, floor_s: 900}
+      irrigation: {multiple_of_typical: 2.0, floor_s: 3600}
+    provisional: true
+
+  unusual_cycling:
+    description: "Switching count over the window far above the equipment's normal rate."
+    evidence_required: [switch_count, window_s, typical_switch_rate_per_h]
+    provisional_thresholds:
+      well_pump: {switches_per_h: 12}
+      refrigerator: {switches_per_h: 8}
+      air_handler: {switches_per_h: 6}
+    notes: "Refrigeration duty cycle typically sits in a 33 to 40 percent band. Validate against your own site."
+    provisional: true
+
+  unexpected_demand:
+    description: "Panel or equipment power materially above its own baseline for the same hour and season."
+    evidence_required: [panel_w, baseline_w, deviation_sigma, solar_context]
+    notes: "A fall in PV raises grid import without any appliance anomaly. Never read a grid delta as a load anomaly."
+    provisional: true
+
+  telemetry_problem:
+    description: "Missing, stale, frozen, or internally inconsistent measurement."
+    evidence_required: [data_age_s, expected_period_s, gap_count]
+    provisional_thresholds:
+      stale_s: 300
+      frozen_identical_samples: 60
+    provisional: false
+
+  insufficient_evidence:
+    description: "The window cannot support any of the above. Abstain rather than guess."
+    provisional: false
+
+abstention:
+  # An answer must abstain, not guess, when any of these hold.
+  require_abstain_when:
+    - "the only appliance signal is an inferred head with no measured channel and no rule agreement"
+    - "panel data age exceeds stale_after_s"
+    - "the window overlaps a known ingestion gap"
+    - "solar context is missing while the finding depends on a grid balance"
+
+coverage:
+  # Filled in only after evaluation. Never publish a category as evaluated
+  # until it has both reviewed positives and reviewed normal time.
+  panel1: {evaluated: [], unevaluated: [prolonged_operation, unusual_cycling, unexpected_demand, telemetry_problem]}
+  panel2: {evaluated: [], unevaluated: [prolonged_operation, unusual_cycling, unexpected_demand, telemetry_problem]}
+  panel3: {evaluated: [], unevaluated: [prolonged_operation, unusual_cycling, unexpected_demand, telemetry_problem]}

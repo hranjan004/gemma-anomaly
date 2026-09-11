@@ -1,0 +1,16 @@
+# Local site configuration. Panel and appliance mappings describe a specific
+# building's loads, and host addresses describe a specific private network.
+# Neither belongs in a repository. Start from config/site.example.yaml.
+config/site.yaml
+
+# Snapshots and replay sets contain real measurements from a real building.
+replay_data/
+artifacts/
+
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.bak
+.DS_Store

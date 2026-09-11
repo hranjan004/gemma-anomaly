@@ -1,0 +1,9 @@
+# GPU instance only. Pin exact versions after the compatibility test.
+torch
+transformers
+peft
+trl
+bitsandbytes
+accelerate
+datasets
+vllm
